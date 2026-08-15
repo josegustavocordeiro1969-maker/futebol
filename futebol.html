@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Futebol</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --paid: #065f46;
+      --paid-text: #34d399;
+      --unpaid: #7f1d1d;
+      --unpaid-text: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background-color: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background-color: #273549;
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input, select {
+      background-color: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      padding: 8px 14px;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: #ffffff;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+    }
+
+    .btn-reset {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #162032;
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tr:hover {
+      background-color: #243147;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      border: none;
+    }
+
+    .status-badge.pago {
+      background-color: var(--paid);
+      color: var(--paid-text);
+    }
+
+    .status-badge.pendente {
+      background-color: var(--unpaid);
+      color: var(--unpaid-text);
+    }
+
+    .editable-name {
+      cursor: pointer;
+      border-bottom: 1px dashed var(--text-muted);
+      display: inline-block;
+      min-width: 80px;
+    }
+
+    .editable-name:focus {
+      outline: 1px solid var(--primary);
+      background-color: #0f172a;
+      border-radius: 4px;
+      padding: 2px 4px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background-color: #162032;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .summary-card span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .summary-card strong {
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>Gestão de Futebol</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Controle de membros, sábados e pagamentos (Setembro a Dezembro)</p>
+    </div>
+    <button class="btn-reset" onclick="resetDatabase()">Restaurar Dados Padrão</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('mensal')">Mensalistas (Set - Dez)</button>
+    <button class="tab-btn" onclick="switchTab('avulsos')">Jogadores Avulsos</button>
+    <button class="tab-btn" onclick="switchTab('membros')">Gerenciar Elenco</button>
+  </div>
+
+  <!-- TAB: MENSALISTAS POR SÁBADO -->
+  <div id="tab-mensal" class="tab-content active">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Grade de Presença e Pagamentos por Sábado</div>
+        <div class="form-inline">
+          <label style="align-self: center; font-size: 0.9rem; color: var(--text-muted);">Mês:</label>
+          <select id="select-mes" onchange="renderMonthlyView()">
+            <option value="setembro">Setembro</option>
+            <option value="outubro">Outubro</option>
+            <option value="novembro">Novembro</option>
+            <option value="dezembro">Dezembro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span>Total de Mensalistas</span>
+          <strong id="stat-total-membros">0</strong>
+        </div>
+        <div class="summary-card">
+          <span>Total Pago no Mês</span>
+          <strong id="stat-total-arrecadado">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="table-mensal">
+          <!-- Dinâmico via JS -->
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: AVULSOS -->
+  <div id="tab-avulsos" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Registro de Jogadores Avulsos</div>
+        <div class="form-inline">
+          <input type="text" id="avulso-nome" placeholder="Nome do Jogador">
+          <input type="date" id="avulso-data">
+          <input type="number" id="avulso-valor" placeholder="Valor (R$)" style="width: 100px;" value="20">
+          <select id="avulso-status">
+            <option value="pago">Pago</option>
+            <option value="pendente">Pendente</option>
+          </select>
+          <button class="btn-primary" onclick="addAvulso()">Adicionar</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Data</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-avulsos">
+            <!-- Dinâmico via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: MEMBROS FIXOS -->
+  <div id="tab-membros" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Membros Mensalistas</div>
+        <div class="form-inline">
+          <input type="text" id="novo-membro-nome" placeholder="Nome do novo membro">
+          <button class="btn-primary" onclick="addMembro()">Adicionar Membro</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 60px;">Nº</th>
+              <th>Nome (clique no texto para editar)</th>
+              <th style="width: 100px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-membros">
+            <!-- Dinâmico via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = "GESTAO_FUTEBOL_DB_V1";
+
+  // Lista base inicial fornecida
+  const INITIAL_MEMBROS = [
+    "Gustavo", "Jackson", "Diego", "Wellington", "Lzu",
+    "Rafa", "Fabio", "Lucas", "Darllan", "Pedro",
+    "Ari", "Marlon", "Vinicius"
+  ];
+
+  // Sábados de 2026 de Setembro a Dezembro
+  const SABBADOS_CONFIG = {
+    setembro: ["05/09", "12/09", "19/09", "26/09"],
+    outubro: ["03/10", "10/10", "17/10", "24/10", "31/10"],
+    novembro: ["07/11", "14/11", "21/11", "28/11"],
+    dezembro: ["05/12", "12/12", "19/12", "26/12"]
+  };
+
+  let db = {
+    membros: [],
+    pagamentos: {}, // formato: { [membroId]: { "setembro": { "05/09": "pago" | "pendente" } } }
+    avulsos: []     // formato: [ { id, nome, data, valor, status } ]
+  };
+
+  function initDatabase() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      db = JSON.parse(saved);
+    } else {
+      db.membros = INITIAL_MEMBROS.map((nome, index) => ({
+        id: "m_" + (index + 1),
+        nome: nome
+      }));
+      db.pagamentos = {};
+      db.avulsos = [];
+      saveDatabase();
+    }
+  }
+
+  function saveDatabase() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  }
+
+  function resetDatabase() {
+    if (confirm("Deseja restaurar a lista inicial padrão? Todas as edições serão resetadas.")) {
+      localStorage.removeItem(STORAGE_KEY);
+      initDatabase();
+      renderAll();
+    }
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    event.target.classList.add('active');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    renderAll();
+  }
+
+  function getStatus(membroId, mes, sabado) {
+    if (db.pagamentos[membroId] && db.pagamentos[membroId][mes] && db.pagamentos[membroId][mes][sabado]) {
+      return db.pagamentos[membroId][mes][sabado];
+    }
+    return "pendente";
+  }
+
+  function toggleStatus(membroId, mes, sabado) {
+    if (!db.pagamentos[membroId]) db.pagamentos[membroId] = {};
+    if (!db.pagamentos[membroId][mes]) db.pagamentos[membroId][mes] = {};
+
+    const current = getStatus(membroId, mes, sabado);
+    db.pagamentos[membroId][mes][sabado] = (current === "pago") ? "pendente" : "pago";
+
+    saveDatabase();
+    renderMonthlyView();
+  }
+
+  function renderMonthlyView() {
+    const mes = document.getElementById('select-mes').value;
+    const sabados = SABBADOS_CONFIG[mes];
+    const table = document.getElementById('table-mensal');
+
+    let totalPagosCount = 0;
+
+    let html = `<thead><tr><th>Nº</th><th>Membro</th>`;
+    sabados.forEach(sab => {
+      html += `<th style="text-align:center;">Sáb ${sab}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    db.membros.forEach((m, idx) => {
+      html += `<tr>
+        <td style="color: var(--text-muted);">${idx + 1}</td>
+        <td><strong>${m.nome}</strong></td>`;
+
+      sabados.forEach(sab => {
+        const st = getStatus(m.id, mes, sab);
+        if (st === "pago") totalPagosCount++;
+        html += `<td style="text-align:center;">
+          <button class="status-badge ${st}" onclick="toggleStatus('${m.id}', '${mes}', '${sab}')">
+            ${st.toUpperCase()}
+          </button>
+        </td>`;
+      });
+
+      html += `</tr>`;
+    });
+
+    html += `</tbody>`;
+    table.innerHTML = html;
+
+    document.getElementById('stat-total-membros').innerText = db.membros.length;
+    document.getElementById('stat-total-arrecadado').innerText = `R$ ${(totalPagosCount * 20).toFixed(2)}`;
+  }
+
+  function renderMembros() {
+    const tbody = document.getElementById('tbody-membros');
+    tbody.innerHTML = db.membros.map((m, idx) => `
+      <tr>
+        <td style="color: var(--text-muted);">${idx + 1}</td>
+        <td>
+          <span class="editable-name" contenteditable="true" onblur="updateMembroNome('${m.id}', this.innerText)">${m.nome}</span>
+        </td>
+        <td>
+          <button class="btn-danger" onclick="removeMembro('${m.id}')">Excluir</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function addMembro() {
+    const input = document.getElementById('novo-membro-nome');
+    const nome = input.value.trim();
+    if (!nome) return;
+
+    db.membros.push({
+      id: "m_" + Date.now(),
+      nome: nome
+    });
+    input.value = "";
+    saveDatabase();
+    renderAll();
+  }
+
+  function updateMembroNome(id, novoNome) {
+    const limpo = novoNome.trim();
+    if (!limpo) return;
+    const item = db.membros.find(m => m.id === id);
+    if (item) {
+      item.nome = limpo;
+      saveDatabase();
+      renderMonthlyView();
+    }
+  }
+
+  function removeMembro(id) {
+    if (confirm("Remover este membro?")) {
+      db.membros = db.membros.filter(m => m.id !== id);
+      delete db.pagamentos[id];
+      saveDatabase();
+      renderAll();
+    }
+  }
+
+  function renderAvulsos() {
+    const tbody = document.getElementById('tbody-avulsos');
+    tbody.innerHTML = db.avulsos.map(a => `
+      <tr>
+        <td>
+          <span class="editable-name" contenteditable="true" onblur="updateAvulsoField('${a.id}', 'nome', this.innerText)">${a.nome}</span>
+        </td>
+        <td>${a.data || '-'}</td>
+        <td>
+          R$ <span class="editable-name" contenteditable="true" onblur="updateAvulsoField('${a.id}', 'valor', this.innerText)">${a.valor}</span>
+        </td>
+        <td>
+          <button class="status-badge ${a.status}" onclick="toggleAvulsoStatus('${a.id}')">
+            ${a.status.toUpperCase()}
+          </button>
+        </td>
+        <td>
+          <button class="btn-danger" onclick="removeAvulso('${a.id}')">Excluir</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function addAvulso() {
+    const nomeInput = document.getElementById('avulso-nome');
+    const dataInput = document.getElementById('avulso-data');
+    const valorInput = document.getElementById('avulso-valor');
+    const statusSelect = document.getElementById('avulso-status');
+
+    if (!nomeInput.value.trim()) return;
+
+    db.avulsos.push({
+      id: "a_" + Date.now(),
+      nome: nomeInput.value.trim(),
+      data: dataInput.value,
+      valor: valorInput.value || 0,
+      status: statusSelect.value
+    });
+
+    nomeInput.value = "";
+    dataInput.value = "";
+    saveDatabase();
+    renderAvulsos();
+  }
+
+  function toggleAvulsoStatus(id) {
+    const item = db.avulsos.find(a => a.id === id);
+    if (item) {
+      item.status = item.status === "pago" ? "pendente" : "pago";
+      saveDatabase();
+      renderAvulsos();
+    }
+  }
+
+  function updateAvulsoField(id, field, value) {
+    const item = db.avulsos.find(a => a.id === id);
+    if (item) {
+      item[field] = value.trim();
+      saveDatabase();
+    }
+  }
+
+  function removeAvulso(id) {
+    db.avulsos = db.avulsos.filter(a => a.id !== id);
+    saveDatabase();
+    renderAvulsos();
+  }
+
+  function renderAll() {
+    renderMonthlyView();
+    renderAvulsos();
+    renderMembros();
+  }
+
+  // Inicialização
+  initDatabase();
+  renderAll();
+</script>
+
+</body>
+</html>
